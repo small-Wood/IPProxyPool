@@ -214,6 +214,35 @@ import requests
 r = requests.get('http://127.0.0.1:8000/delete?ip=120.92.3.127')
 print r.text
 ```
+
+#### 第三种模式
+```
+GET /random
+```
+这种模式用于随机查询代理ip数据。
+
+#### 参数 
+
+| Name | Type | Description |
+| ----| ---- | ---- |
+| types | int | 0: 高匿,1:匿名,2 透明 |
+| protocol | int | 0: http, 1 https, 2 http/https |
+| count | int | 数量 |
+| country | str | 取值为 国内, 国外 |
+| area | str | 地区 |
+
+
+
+#### 例子
+
+##### IPProxys默认端口为8000,端口可以在config.py中配置。
+
+##### 如果是在本机上测试：
+
+1.获取5个ip地址在中国的高匿代理：http://127.0.0.1:8000/random?types=0&count=5&country=国内
+<br/>
+2.响应为JSON格式，随机返回指定条记录
+
 ## config.py参数配置
 ```
 #parserList是网址解析规则表,大家可以将发现的代理网址,将提取规则添加到其中,方便爬虫的爬取。

@@ -1,8 +1,8 @@
 # coding:utf-8
 from __future__ import unicode_literals
 
+import random
 from redis import Redis
-
 import config
 from db.ISqlHelper import ISqlHelper
 from db.SqlHelper import Proxy
@@ -111,6 +111,24 @@ class RedisHelper(ISqlHelper):
             result.append((p.ip, p.port, p.score))
         return result
 
+    def random(self, count=None, conditions=None):
+        count = (count and int(count)) or 1000  # 最多返回1000条数据
+        count = 1000 if count > 1000 else count
+
+        querys = {k: v for k, v in conditions.items() if k in self.index_names} if conditions else None
+        if querys:
+            objects = list(self.get_keys(querys))
+        else:
+            objects = list(
+                self.redis.zrevrangebyscore(self.get_index_name("score"), '+inf', '-inf', start=0))
+
+        result = []
+        names = random.sample(objects, count)
+        for name in names:
+            p = self.get_proxy_by_name(name)
+            result.append((p.ip, p.port, p.score))
+        return result
+
 
 if __name__ == '__main__':
     sqlhelper = RedisHelper()
@@ -121,10 +139,11 @@ if __name__ == '__main__':
               'types': 0, 'score': 100}
     assert sqlhelper.insert(proxy) == True
     assert sqlhelper.insert(proxy2) == True
-    assert sqlhelper.get_keys({'types': 1}) == ['proxy::192.168.1.1:80:0', ], sqlhelper.get_keys({'types': 1})
-    assert sqlhelper.select(conditions={'protocol': 0}) == [('192.168.1.1', '80', '0')]
-    assert sqlhelper.update({'types': 1}, {'score': 888}) == 1
-    assert sqlhelper.select() == [('192.168.1.1', '80', '888'), ('localhost', '433', '100')]
+    # assert sqlhelper.get_keys({'types': 1}) == ['proxy::192.168.1.1:80:0', ], sqlhelper.get_keys({'types': 1})
+    # assert sqlhelper.select(conditions={'protocol': 0}) == [('192.168.1.1', '80', '0')]
+    # assert sqlhelper.update({'types': 1}, {'score': 888}) == 1
+    # assert sqlhelper.select() == [('192.168.1.1', '80', '888'), ('localhost', '433', '100')]
+
     # assert sqlhelper.delete({'types': 1}) == 1
     # sqlhelper.drop_db()
     print('All pass.')

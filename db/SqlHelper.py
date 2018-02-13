@@ -1,5 +1,7 @@
 # coding:utf-8
 import datetime
+from sqlalchemy.sql.expression import func
+
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, create_engine, VARCHAR
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -132,6 +134,29 @@ class SqlHelper(ISqlHelper):
         else:
             return query.order_by(Proxy.score.desc(), Proxy.speed).all()
 
+    def random(self, count=None, conditions=None):
+        '''
+        conditions的格式是个字典。类似self.params
+        :param count:
+        :param conditions:
+        :return:
+        '''
+        if conditions:
+            conditon_list = []
+            for key in list(conditions.keys()):
+                if self.params.get(key, None):
+                    conditon_list.append(self.params.get(key) == conditions.get(key))
+            conditions = conditon_list
+        else:
+            conditions = []
+
+        query = self.session.query(Proxy.ip, Proxy.port, Proxy.score)
+        if len(conditions) > 0:
+            for condition in conditions:
+                query = query.filter(condition)
+
+        all_data = query.order_by(func.random()).limit(count).all()
+        return all_data
 
     def close(self):
         pass

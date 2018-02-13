@@ -7,11 +7,11 @@ import sys
 import web
 import config
 from db.DataStore import sqlhelper
-from db.SqlHelper import Proxy
 
 urls = (
     '/', 'select',
-    '/delete', 'delete'
+    '/delete', 'delete',
+    '/random', 'random'
 )
 
 
@@ -34,6 +34,13 @@ class delete(object):
     def GET(self):
         inputs = web.input()
         json_result = json.dumps(sqlhelper.delete(inputs))
+        return json_result
+
+
+class random(object):
+    def GET(self):
+        inputs = web.input()
+        json_result = json.dumps(sqlhelper.random(inputs.get('count', None), inputs))
         return json_result
 
 
