@@ -36,6 +36,8 @@ class SqlHelper(ISqlHelper):
     params = {'ip': Proxy.ip, 'port': Proxy.port, 'types': Proxy.types, 'protocol': Proxy.protocol,
               'country': Proxy.country, 'area': Proxy.area, 'score': Proxy.score}
 
+    leq_extra_params = {'speed': Proxy.speed}
+
     def __init__(self):
         if 'sqlite' in DB_CONFIG['DB_CONNECT_STRING']:
             connect_args = {'check_same_thread': False}
@@ -146,6 +148,8 @@ class SqlHelper(ISqlHelper):
             for key in list(conditions.keys()):
                 if self.params.get(key, None):
                     conditon_list.append(self.params.get(key) == conditions.get(key))
+                elif self.leq_extra_params.get(key, None):
+                    conditon_list.append(self.leq_extra_params.get(key) <= conditions.get(key))
             conditions = conditon_list
         else:
             conditions = []
@@ -154,9 +158,7 @@ class SqlHelper(ISqlHelper):
         if len(conditions) > 0:
             for condition in conditions:
                 query = query.filter(condition)
-
-        all_data = query.order_by(func.random()).limit(count).all()
-        return all_data
+        return query.order_by(func.random()).limit(count).all()
 
     def close(self):
         pass
